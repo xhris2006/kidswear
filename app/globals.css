@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --coral: #FF6B6B;
+    --peach: #FFB347;
+    --mint: #4ECDC4;
+    --lavender: #A78BFA;
+    --sky: #7DD3FC;
+    --rose: #FDA4AF;
+    --lemon: #FDE68A;
+    --sage: #86EFAC;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-nunito), sans-serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-coral text-white font-bold py-3 px-6 rounded-full transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95;
+    background-color: #FF6B6B;
+  }
+
+  .btn-primary:hover {
+    background-color: #ff5252;
+  }
+
+  .btn-outline {
+    @apply border-2 border-coral text-coral font-bold py-3 px-6 rounded-full transition-all duration-300 hover:bg-coral hover:text-white;
+    border-color: #FF6B6B;
+    color: #FF6B6B;
+  }
+
+  .btn-outline:hover {
+    background-color: #FF6B6B;
+    color: white;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  }
+
+  .section-title {
+    @apply font-playfair text-3xl md:text-4xl font-bold text-gray-800;
+  }
+
+  .badge-hot {
+    @apply bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full absolute top-2 right-2 z-10;
+  }
+
+  .badge-sale {
+    @apply bg-coral text-white text-xs font-bold px-2 py-0.5 rounded-full absolute top-2 left-2 z-10;
+    background-color: #FF6B6B;
+  }
+
+  .nav-link {
+    @apply text-gray-700 hover:text-coral font-semibold transition-colors duration-200 relative;
+    --tw-text-opacity: 1;
+  }
+
+  .nav-link:hover {
+    color: #FF6B6B;
+  }
+
+  .input-field {
+    @apply w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-coral transition-colors font-medium;
+  }
+
+  .input-field:focus {
+    border-color: #FF6B6B;
+  }
+}
+
+@layer utilities {
+  .font-playfair {
+    font-family: var(--font-playfair), serif;
+  }
+
+  .font-nunito {
+    font-family: var(--font-nunito), sans-serif;
+  }
+
+  .text-coral {
+    color: #FF6B6B;
+  }
+
+  .bg-coral {
+    background-color: #FF6B6B;
+  }
+
+  .border-coral {
+    border-color: #FF6B6B;
+  }
+
+  .gradient-hero {
+    background: linear-gradient(135deg, #FFF5F5 0%, #FFF0F9 50%, #F0FBFF 100%);
+  }
+
+  .gradient-card {
+    background: linear-gradient(135deg, #FFE4E4 0%, #FFF0F5 100%);
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Custom scrollbar for desktop */
+@media (min-width: 1024px) {
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #FF6B6B;
+    border-radius: 3px;
+  }
+}
