@@ -43,7 +43,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
-              Premium children's clothing for girls, boys, and babies. Crafted with love for your little ones.
+              Premium children&apos;s clothing for girls, boys, and babies. Crafted with love for your little ones.
             </p>
             <div className="flex gap-3">
               {[Instagram, Facebook, Twitter, Youtube].map((Icon, i) => (

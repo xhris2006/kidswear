@@ -7,17 +7,17 @@ import ShopFilters from "@/components/shop/ShopFilters";
 import { Suspense } from "react";
 
 interface ShopPageProps {
-  searchParams: {
+  searchParams: Promise<{
     category?: string;
     search?: string;
     sort?: string;
     minPrice?: string;
     maxPrice?: string;
     page?: string;
-  };
+  }>;
 }
 
-async function getProducts(searchParams: ShopPageProps["searchParams"]) {
+async function getProducts(searchParams: Awaited<ShopPageProps["searchParams"]>) {
   const page = parseInt(searchParams.page || "1");
   const limit = 12;
   const skip = (page - 1) * limit;
@@ -68,7 +68,8 @@ async function getProducts(searchParams: ShopPageProps["searchParams"]) {
 }
 
 export default async function ShopPage({ searchParams }: ShopPageProps) {
-  const { products, total, categories, page, limit } = await getProducts(searchParams);
+  const resolvedSearchParams = await searchParams;
+  const { products, total, categories, page, limit } = await getProducts(resolvedSearchParams);
   const totalPages = Math.ceil(total / limit);
 
   return (
@@ -78,10 +79,10 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
         {/* Header */}
         <div className="mb-8">
           <h1 className="font-playfair text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-            {searchParams.search
-              ? `Results for "${searchParams.search}"`
-              : searchParams.category
-              ? categories.find((c) => c.slug === searchParams.category)?.name || "Shop"
+            {resolvedSearchParams.search
+              ? `Results for "${resolvedSearchParams.search}"`
+              : resolvedSearchParams.category
+              ? categories.find((c) => c.slug === resolvedSearchParams.category)?.name || "Shop"
               : "All Products"}
           </h1>
           <p className="text-gray-500">{total} products found</p>
@@ -92,8 +93,8 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
           <aside className="lg:col-span-1">
             <ShopFilters
               categories={categories}
-              currentCategory={searchParams.category}
-              currentSort={searchParams.sort}
+              currentCategory={resolvedSearchParams.category}
+              currentSort={resolvedSearchParams.sort}
             />
           </aside>
 
@@ -120,7 +121,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
                       <a
                         key={p}
                         href={`?${new URLSearchParams({
-                          ...searchParams,
+                          ...resolvedSearchParams,
                           page: p.toString(),
                         })}`}
                         className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold text-sm transition-all ${

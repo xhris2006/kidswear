@@ -7,12 +7,13 @@ import ProductDetailClient from "@/components/shop/ProductDetailClient";
 import ProductCard from "@/components/shop/ProductCard";
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({ params }: Props) {
+  const { id } = await params;
   const product = await prisma.product.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
   return {
     title: product?.name || "Product",
@@ -21,8 +22,9 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function ProductPage({ params }: Props) {
+  const { id } = await params;
   const product = await prisma.product.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { category: true },
   });
 

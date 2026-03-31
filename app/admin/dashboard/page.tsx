@@ -95,7 +95,7 @@ export default async function AdminDashboard() {
       <div className="p-6 sm:p-8">
         <div className="mb-8">
           <h1 className="font-playfair text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500 mt-1">Welcome back, {session.user?.name}! Here's what's happening.</p>
+          <p className="text-gray-500 mt-1">Welcome back, {session.user?.name}! Here&apos;s what&apos;s happening.</p>
         </div>
 
         {/* Stats */}

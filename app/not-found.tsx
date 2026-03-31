@@ -14,7 +14,7 @@ export default function NotFound() {
           Oops! Page Not Found
         </h2>
         <p className="text-gray-500 text-lg max-w-md mb-8">
-          Looks like this page went on an adventure. Let's find you something cute instead!
+          Looks like this page went on an adventure. Let&apos;s find you something cute instead!
         </p>
         <div className="flex gap-4 flex-wrap justify-center">
           <Link

@@ -17,9 +17,14 @@ const statusColors: Record<string, string> = {
   REFUNDED: "bg-gray-100 text-gray-700",
 };
 
-export default async function OrdersPage({ searchParams }: { searchParams: { success?: string } }) {
+export default async function OrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ success?: string }>;
+}) {
   const session = await auth();
   if (!session) redirect("/auth/login?redirect=/shop/orders");
+  const { success } = await searchParams;
 
   const orders = await prisma.order.findMany({
     where: { userId: (session.user as any).id },
@@ -31,12 +36,12 @@ export default async function OrdersPage({ searchParams }: { searchParams: { suc
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {searchParams.success && (
+        {success && (
           <div className="bg-green-50 border border-green-200 rounded-2xl p-5 mb-8 flex items-center gap-4">
             <CheckCircle className="w-8 h-8 text-green-500 flex-shrink-0" />
             <div>
               <p className="font-bold text-green-800 text-lg">Order Placed Successfully! 🎉</p>
-              <p className="text-green-600 text-sm">We'll send a confirmation email shortly.</p>
+              <p className="text-green-600 text-sm">We&apos;ll send a confirmation email shortly.</p>
             </div>
           </div>
         )}
