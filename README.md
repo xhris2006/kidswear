@@ -192,10 +192,11 @@ Open [http://localhost:3000](http://localhost:3000)
 In your Supabase dashboard → **Settings → Database**:
 
 - **For `DATABASE_URL`** (runtime): Use the **Transaction pooler** URL
-  - Format: `postgresql://postgres.[ref]:[pass]@aws-0-[region].pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1`
+  - Format: `postgresql://postgres.[ref]:[pass]@aws-0-[region].pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1&sslmode=require`
   - Port: **6543**
 
 - **For `DIRECT_URL`** (migrations): Use the **Session pooler** or direct connection
+  - Recommended format: `postgresql://postgres.[ref]:[pass]@aws-0-[region].pooler.supabase.com:5432/postgres?sslmode=require`
   - Port: **5432**
 
 > ⚠️ **Important**: Always use the pooler URL for serverless/Vercel deployments to avoid "connection refused" errors (IPv6 issues with direct connections).

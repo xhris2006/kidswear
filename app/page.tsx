@@ -8,6 +8,8 @@ import ProductGrid from "@/components/shop/ProductGrid";
 import PromoBanner from "@/components/shop/PromoBanner";
 import NewsletterSection from "@/components/shop/NewsletterSection";
 
+export const dynamic = "force-dynamic";
+
 async function getHomeData() {
   try {
     const [categories, featuredProducts, newProducts] = await Promise.all([
