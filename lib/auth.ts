@@ -5,6 +5,12 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import {
+  DEFAULT_ADMIN_EMAIL,
+  DEFAULT_ADMIN_NAME,
+  DEFAULT_ADMIN_PASSWORD,
+} from "@/lib/default-admin";
+import { Role } from "@prisma/client";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -26,17 +32,34 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
+        const email = String(credentials.email).trim().toLowerCase();
+        const password = String(credentials.password);
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+        let user = await prisma.user.findUnique({
+          where: { email },
         });
+
+        if (email === DEFAULT_ADMIN_EMAIL && password === DEFAULT_ADMIN_PASSWORD) {
+          const hashedPassword = await bcrypt.hash(DEFAULT_ADMIN_PASSWORD, 12);
+          user = await prisma.user.upsert({
+            where: { email: DEFAULT_ADMIN_EMAIL },
+            update: {
+              name: DEFAULT_ADMIN_NAME,
+              password: hashedPassword,
+              role: Role.ADMIN,
+            },
+            create: {
+              email: DEFAULT_ADMIN_EMAIL,
+              name: DEFAULT_ADMIN_NAME,
+              password: hashedPassword,
+              role: Role.ADMIN,
+            },
+          });
+        }
 
         if (!user || !user.password) return null;
 
-        const isValid = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        );
+        const isValid = await bcrypt.compare(password, user.password);
 
         if (!isValid) return null;
 

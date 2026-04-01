@@ -1,6 +1,11 @@
 // prisma/seed.ts
 import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import {
+  DEFAULT_ADMIN_EMAIL,
+  DEFAULT_ADMIN_NAME,
+  DEFAULT_ADMIN_PASSWORD,
+} from "@/lib/default-admin";
 
 const prisma = new PrismaClient();
 
@@ -8,13 +13,18 @@ async function main() {
   console.log("🌱 Seeding database...");
 
   // Create admin user
-  const adminPassword = await bcrypt.hash("Admin@123456", 12);
+  const adminPassword = await bcrypt.hash(DEFAULT_ADMIN_PASSWORD, 12);
   const admin = await prisma.user.upsert({
-    where: { email: "diorrebero90@icloud.com" },
-    update: {},
+    where: { email: DEFAULT_ADMIN_EMAIL },
+    update: {
+      email: DEFAULT_ADMIN_EMAIL,
+      name: DEFAULT_ADMIN_NAME,
+      password: adminPassword,
+      role: Role.ADMIN,
+    },
     create: {
-      email: "diorrebero90@icloud.com",
-      name: "Admin",
+      email: DEFAULT_ADMIN_EMAIL,
+      name: DEFAULT_ADMIN_NAME,
       password: adminPassword,
       role: Role.ADMIN,
     },

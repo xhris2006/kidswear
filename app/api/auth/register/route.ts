@@ -13,7 +13,10 @@ const schema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, password } = schema.parse(body);
+    const parsed = schema.parse(body);
+    const name = parsed.name.trim();
+    const email = parsed.email.trim().toLowerCase();
+    const password = parsed.password;
 
     const exists = await prisma.user.findUnique({ where: { email } });
     if (exists) {
