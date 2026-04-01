@@ -5,6 +5,7 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { auth } from "@/lib/auth";
 import SessionProvider from "@/components/layout/SessionProvider";
+import type { Session } from "next-auth";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -39,7 +40,13 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  let session: Session | null = null;
+
+  try {
+    session = await auth();
+  } catch (error) {
+    console.error("[layout] Failed to load auth session", error);
+  }
 
   return (
     <html lang="en" className={`${nunito.variable} ${playfair.variable}`}>

@@ -9,25 +9,36 @@ import PromoBanner from "@/components/shop/PromoBanner";
 import NewsletterSection from "@/components/shop/NewsletterSection";
 
 async function getHomeData() {
-  const [categories, featuredProducts, newProducts] = await Promise.all([
-    prisma.category.findMany({
-      include: { _count: { select: { products: true } } },
-      take: 4,
-    }),
-    prisma.product.findMany({
-      where: { isFeatured: true, isActive: true },
-      include: { category: true },
-      take: 8,
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.product.findMany({
-      where: { isActive: true },
-      include: { category: true },
-      take: 8,
-      orderBy: { createdAt: "desc" },
-    }),
-  ]);
-  return { categories, featuredProducts, newProducts };
+  try {
+    const [categories, featuredProducts, newProducts] = await Promise.all([
+      prisma.category.findMany({
+        include: { _count: { select: { products: true } } },
+        take: 4,
+      }),
+      prisma.product.findMany({
+        where: { isFeatured: true, isActive: true },
+        include: { category: true },
+        take: 8,
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.product.findMany({
+        where: { isActive: true },
+        include: { category: true },
+        take: 8,
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
+
+    return { categories, featuredProducts, newProducts };
+  } catch (error) {
+    console.error("[home] Failed to load homepage data", error);
+
+    return {
+      categories: [],
+      featuredProducts: [],
+      newProducts: [],
+    };
+  }
 }
 
 export default async function HomePage() {
