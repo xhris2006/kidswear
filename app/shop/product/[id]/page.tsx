@@ -12,57 +12,85 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
   const { id } = await params;
-  const product = await prisma.product.findUnique({
-    where: { id },
-  });
-  return {
-    title: product?.name || "Product",
-    description: product?.description,
-  };
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id },
+    });
+    return {
+      title: product?.name || "Product",
+      description: product?.description,
+    };
+  } catch (error) {
+    console.error("[product] Failed to load metadata", error);
+
+    return {
+      title: "Product",
+      description: "Product details",
+    };
+  }
 }
 
 export default async function ProductPage({ params }: Props) {
   const { id } = await params;
-  const product = await prisma.product.findUnique({
-    where: { id },
-    include: { category: true },
-  });
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id },
+      include: { category: true },
+    });
 
-  if (!product) notFound();
+    if (!product) notFound();
 
-  const related = await prisma.product.findMany({
-    where: {
-      categoryId: product.categoryId,
-      id: { not: product.id },
-      isActive: true,
-    },
-    include: { category: true },
-    take: 4,
-  });
+    const related = await prisma.product.findMany({
+      where: {
+        categoryId: product.categoryId,
+        id: { not: product.id },
+        isActive: true,
+      },
+      include: { category: true },
+      take: 4,
+    });
 
-  return (
-    <div className="min-h-screen">
-      <Navbar />
-      <main>
-        <ProductDetailClient product={product as any} />
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <main>
+          <ProductDetailClient product={product as any} />
 
-        {/* Related products */}
-        {related.length > 0 && (
-          <section className="py-16 bg-gray-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <h2 className="font-playfair text-3xl font-bold text-gray-900 mb-8">
-                You Might Also Like
-              </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                {related.map((p) => (
-                  <ProductCard key={p.id} product={p as any} />
-                ))}
+          {/* Related products */}
+          {related.length > 0 && (
+            <section className="py-16 bg-gray-50">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 className="font-playfair text-3xl font-bold text-gray-900 mb-8">
+                  You Might Also Like
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {related.map((p) => (
+                    <ProductCard key={p.id} product={p as any} />
+                  ))}
+                </div>
               </div>
-            </div>
-          </section>
-        )}
-      </main>
-      <Footer />
-    </div>
-  );
+            </section>
+          )}
+        </main>
+        <Footer />
+      </div>
+    );
+  } catch (error) {
+    console.error("[product] Failed to load product page", error);
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <main className="max-w-3xl mx-auto px-4 py-20 text-center">
+          <h1 className="font-playfair text-3xl font-bold text-gray-900">
+            Product unavailable
+          </h1>
+          <p className="mt-4 text-gray-600">
+            We could not load this product right now. Please try again in a moment.
+          </p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 }

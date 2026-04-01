@@ -9,47 +9,62 @@ import { ShoppingBag, Users, Package, DollarSign, TrendingUp } from "lucide-reac
 import { isAdminRole } from "@/lib/roles";
 
 async function getStats() {
-  const [
-    totalOrders,
-    totalUsers,
-    totalProducts,
-    revenueResult,
-    recentOrders,
-    topProducts,
-  ] = await Promise.all([
-    prisma.order.count(),
-    prisma.user.count(),
-    prisma.product.count(),
-    prisma.order.aggregate({
-      _sum: { total: true },
-      where: { status: { in: ["PAID", "SHIPPED", "DELIVERED"] } },
-    }),
-    prisma.order.findMany({
-      include: {
-        user: true,
-        orderItems: { include: { product: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 8,
-    }),
-    prisma.product.findMany({
-      include: {
-        _count: { select: { orderItems: true } },
-        category: true,
-      },
-      orderBy: { reviewCount: "desc" },
-      take: 5,
-    }),
-  ]);
+  try {
+    const [
+      totalOrders,
+      totalUsers,
+      totalProducts,
+      revenueResult,
+      recentOrders,
+      topProducts,
+    ] = await Promise.all([
+      prisma.order.count(),
+      prisma.user.count(),
+      prisma.product.count(),
+      prisma.order.aggregate({
+        _sum: { total: true },
+        where: { status: { in: ["PAID", "SHIPPED", "DELIVERED"] } },
+      }),
+      prisma.order.findMany({
+        include: {
+          user: true,
+          orderItems: { include: { product: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+      }),
+      prisma.product.findMany({
+        include: {
+          _count: { select: { orderItems: true } },
+          category: true,
+        },
+        orderBy: { reviewCount: "desc" },
+        take: 5,
+      }),
+    ]);
 
-  return {
-    totalOrders,
-    totalUsers,
-    totalProducts,
-    totalRevenue: revenueResult._sum.total || 0,
-    recentOrders,
-    topProducts,
-  };
+    return {
+      totalOrders,
+      totalUsers,
+      totalProducts,
+      totalRevenue: revenueResult._sum.total || 0,
+      recentOrders,
+      topProducts,
+      dbAvailable: true,
+    };
+  } catch (error) {
+    console.error("[admin] Failed to load dashboard stats", error);
+
+    return {
+      totalOrders: 0,
+      totalUsers: 0,
+      totalProducts: 0,
+      totalRevenue: 0,
+      recentOrders: [],
+      topProducts: [],
+      dbAvailable: false,
+    };
+  }
 }
 
 export default async function AdminDashboard() {
@@ -98,6 +113,12 @@ export default async function AdminDashboard() {
           <h1 className="font-playfair text-3xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-500 mt-1">Welcome back, {session.user?.name}! Here&apos;s what&apos;s happening.</p>
         </div>
+
+        {!stats.dbAvailable && (
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
+            Dashboard data is temporarily unavailable because the database connection failed.
+          </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">

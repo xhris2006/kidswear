@@ -4,7 +4,6 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/shop/ProductCard";
 import ShopFilters from "@/components/shop/ShopFilters";
-import { Suspense } from "react";
 
 interface ShopPageProps {
   searchParams: Promise<{
@@ -18,58 +17,71 @@ interface ShopPageProps {
 }
 
 async function getProducts(searchParams: Awaited<ShopPageProps["searchParams"]>) {
-  const page = parseInt(searchParams.page || "1");
-  const limit = 12;
-  const skip = (page - 1) * limit;
+  try {
+    const page = parseInt(searchParams.page || "1");
+    const limit = 12;
+    const skip = (page - 1) * limit;
 
-  const where: any = { isActive: true };
+    const where: any = { isActive: true };
 
-  if (searchParams.category) {
-    where.category = { slug: searchParams.category };
+    if (searchParams.category) {
+      where.category = { slug: searchParams.category };
+    }
+
+    if (searchParams.search) {
+      where.OR = [
+        { name: { contains: searchParams.search, mode: "insensitive" } },
+        { description: { contains: searchParams.search, mode: "insensitive" } },
+        { tags: { has: searchParams.search } },
+      ];
+    }
+
+    if (searchParams.minPrice || searchParams.maxPrice) {
+      where.price = {};
+      if (searchParams.minPrice) where.price.gte = parseFloat(searchParams.minPrice);
+      if (searchParams.maxPrice) where.price.lte = parseFloat(searchParams.maxPrice);
+    }
+
+    const sortMap: Record<string, any> = {
+      newest: { createdAt: "desc" },
+      price_asc: { price: "asc" },
+      price_desc: { price: "desc" },
+      popular: { reviewCount: "desc" },
+      rating: { rating: "desc" },
+    };
+
+    const orderBy = sortMap[searchParams.sort || "newest"] || { createdAt: "desc" };
+
+    const [products, total, categories] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        include: { category: true },
+        orderBy,
+        skip,
+        take: limit,
+      }),
+      prisma.product.count({ where }),
+      prisma.category.findMany({ orderBy: { name: "asc" } }),
+    ]);
+
+    return { products, total, categories, page, limit, dbAvailable: true };
+  } catch (error) {
+    console.error("[shop] Failed to load products", error);
+
+    return {
+      products: [],
+      total: 0,
+      categories: [],
+      page: 1,
+      limit: 12,
+      dbAvailable: false,
+    };
   }
-
-  if (searchParams.search) {
-    where.OR = [
-      { name: { contains: searchParams.search, mode: "insensitive" } },
-      { description: { contains: searchParams.search, mode: "insensitive" } },
-      { tags: { has: searchParams.search } },
-    ];
-  }
-
-  if (searchParams.minPrice || searchParams.maxPrice) {
-    where.price = {};
-    if (searchParams.minPrice) where.price.gte = parseFloat(searchParams.minPrice);
-    if (searchParams.maxPrice) where.price.lte = parseFloat(searchParams.maxPrice);
-  }
-
-  const sortMap: Record<string, any> = {
-    newest: { createdAt: "desc" },
-    price_asc: { price: "asc" },
-    price_desc: { price: "desc" },
-    popular: { reviewCount: "desc" },
-    rating: { rating: "desc" },
-  };
-
-  const orderBy = sortMap[searchParams.sort || "newest"] || { createdAt: "desc" };
-
-  const [products, total, categories] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      include: { category: true },
-      orderBy,
-      skip,
-      take: limit,
-    }),
-    prisma.product.count({ where }),
-    prisma.category.findMany({ orderBy: { name: "asc" } }),
-  ]);
-
-  return { products, total, categories, page, limit };
 }
 
 export default async function ShopPage({ searchParams }: ShopPageProps) {
   const resolvedSearchParams = await searchParams;
-  const { products, total, categories, page, limit } = await getProducts(resolvedSearchParams);
+  const { products, total, categories, page, limit, dbAvailable } = await getProducts(resolvedSearchParams);
   const totalPages = Math.ceil(total / limit);
 
   return (
@@ -100,6 +112,11 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 
           {/* Products */}
           <div className="lg:col-span-3 mt-6 lg:mt-0">
+            {!dbAvailable && (
+              <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
+                Products are temporarily unavailable because the database connection failed.
+              </div>
+            )}
             {products.length === 0 ? (
               <div className="text-center py-24">
                 <div className="text-6xl mb-4">🔍</div>

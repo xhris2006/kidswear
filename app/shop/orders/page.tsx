@@ -26,11 +26,19 @@ export default async function OrdersPage({
   if (!session) redirect("/auth/login?redirect=/shop/orders");
   const { success } = await searchParams;
 
-  const orders = await prisma.order.findMany({
-    where: { userId: (session.user as any).id },
-    include: { orderItems: { include: { product: true } } },
-    orderBy: { createdAt: "desc" },
-  });
+  let orders: any[] = [];
+  let dbAvailable = true;
+
+  try {
+    orders = await prisma.order.findMany({
+      where: { userId: (session.user as any).id },
+      include: { orderItems: { include: { product: true } } },
+      orderBy: { createdAt: "desc" },
+    });
+  } catch (error) {
+    dbAvailable = false;
+    console.error("[orders] Failed to load orders", error);
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -48,6 +56,12 @@ export default async function OrdersPage({
 
         <h1 className="font-playfair text-3xl sm:text-4xl font-bold text-gray-900 mb-8">My Orders</h1>
 
+        {!dbAvailable && (
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
+            We could not load your orders right now because the database is temporarily unavailable.
+          </div>
+        )}
+
         {orders.length === 0 ? (
           <div className="text-center py-24">
             <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -63,7 +77,7 @@ export default async function OrdersPage({
           </div>
         ) : (
           <div className="space-y-5">
-            {orders.map((order) => (
+            {orders.map((order: any) => (
               <div key={order.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="flex items-center justify-between p-5 border-b border-gray-100 flex-wrap gap-3">
                   <div>
@@ -87,7 +101,7 @@ export default async function OrdersPage({
                 </div>
                 <div className="p-5">
                   <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                    {order.orderItems.map((item) => (
+                    {order.orderItems.map((item: any) => (
                       <div key={item.id} className="flex-shrink-0 flex items-center gap-3 bg-gray-50 rounded-xl p-3 min-w-[200px]">
                         <img
                           src={item.product?.images?.[0] || "/placeholder.jpg"}
