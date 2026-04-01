@@ -24,33 +24,42 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterInput) => {
     setLoading(true);
+
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: data.name,
-          email: data.email,
+          email: data.email.trim().toLowerCase(),
           password: data.password,
         }),
       });
 
+      const payload = await res.json().catch(() => null);
+
       if (!res.ok) {
-        const err = await res.json();
-        toast.error(err.message || "Registration failed");
+        toast.error(payload?.message || "Registration failed");
         return;
       }
 
-      await signIn("credentials", {
-        email: data.email,
+      const result = await signIn("credentials", {
+        email: data.email.trim().toLowerCase(),
         password: data.password,
         redirect: false,
       });
 
-      toast.success("Welcome to KidsWear! 🎉");
+      if (result?.error || result?.ok === false) {
+        toast.error("Account created, but automatic login failed. Please sign in manually.");
+        router.push("/auth/login");
+        return;
+      }
+
+      toast.success("Welcome to KidsWear!");
       router.push("/");
       router.refresh();
-    } catch {
+    } catch (error) {
+      console.error("[register] submit failed", error);
       toast.error("Something went wrong. Try again.");
     } finally {
       setLoading(false);
@@ -66,7 +75,10 @@ export default function RegisterPage() {
       >
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-4">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg" style={{ backgroundColor: "#FF6B6B" }}>
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg"
+              style={{ backgroundColor: "#FF6B6B" }}
+            >
               <span className="text-white font-playfair font-bold text-2xl">K</span>
             </div>
             <span className="font-playfair font-bold text-3xl text-gray-900">
@@ -81,11 +93,7 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label className="text-sm font-bold text-gray-700 block mb-1.5">Full Name</label>
-              <input
-                {...register("name")}
-                className="input-field"
-                placeholder="Jane Doe"
-              />
+              <input {...register("name")} className="input-field" placeholder="Jane Doe" />
               {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
             </div>
 
@@ -117,7 +125,9 @@ export default function RegisterPage() {
                   {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+              {errors.password && (
+                <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+              )}
             </div>
 
             <div>
@@ -151,7 +161,11 @@ export default function RegisterPage() {
 
           <p className="text-center mt-6 text-gray-600 text-sm">
             Already have an account?{" "}
-            <Link href="/auth/login" className="font-bold hover:underline" style={{ color: "#FF6B6B" }}>
+            <Link
+              href="/auth/login"
+              className="font-bold hover:underline"
+              style={{ color: "#FF6B6B" }}
+            >
               Sign In
             </Link>
           </p>

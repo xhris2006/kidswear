@@ -4,6 +4,9 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getRoleForEmail } from "@/lib/roles";
+import { Prisma } from "@prisma/client";
+
+export const dynamic = "force-dynamic";
 
 const schema = z.object({
   name: z.string().min(2),
@@ -35,6 +38,17 @@ export async function POST(req: NextRequest) {
     if (err instanceof z.ZodError) {
       return NextResponse.json({ message: err.errors[0].message }, { status: 400 });
     }
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return NextResponse.json({ message: "Email already registered" }, { status: 400 });
+    }
+    if (err instanceof Prisma.PrismaClientInitializationError) {
+      console.error("[auth] Register DB init failed", err);
+      return NextResponse.json(
+        { message: "Database connection failed. Please verify your Supabase/Vercel env settings." },
+        { status: 503 }
+      );
+    }
+    console.error("[auth] Register failed", err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }

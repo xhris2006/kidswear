@@ -27,26 +27,33 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginInput) => {
     setLoading(true);
-    const result = await signIn("credentials", {
-      email: data.email.trim().toLowerCase(),
-      password: data.password,
-      redirect: false,
-    });
-    setLoading(false);
 
-    if (result?.error) {
-      toast.error("Invalid email or password");
-      return;
+    try {
+      const result = await signIn("credentials", {
+        email: data.email.trim().toLowerCase(),
+        password: data.password,
+        redirect: false,
+      });
+
+      if (result?.error || result?.ok === false) {
+        toast.error("Invalid email or password");
+        return;
+      }
+
+      const session = await getSession();
+      const role = (session?.user as any)?.role;
+      const destination =
+        redirect !== "/" ? redirect : isAdminRole(role) ? "/admin/dashboard" : "/";
+
+      toast.success("Welcome back!");
+      router.push(destination);
+      router.refresh();
+    } catch (error) {
+      console.error("[login] submit failed", error);
+      toast.error("Login failed. Check your database and auth configuration.");
+    } finally {
+      setLoading(false);
     }
-
-    const session = await getSession();
-    const role = (session?.user as any)?.role;
-    const destination =
-      redirect !== "/" ? redirect : isAdminRole(role) ? "/admin/dashboard" : "/";
-
-    toast.success("Welcome back!");
-    router.push(destination);
-    router.refresh();
   };
 
   return (
@@ -68,18 +75,14 @@ export default function LoginPage() {
               Kids<span style={{ color: "#FF6B6B" }}>Wear</span>
             </span>
           </Link>
-          <h1 className="font-playfair text-2xl font-bold text-gray-900">
-            Welcome Back!
-          </h1>
+          <h1 className="font-playfair text-2xl font-bold text-gray-900">Welcome Back!</h1>
           <p className="text-gray-500 mt-1">Sign in to your account</p>
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl p-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
-              <label className="text-sm font-bold text-gray-700 block mb-1.5">
-                Email Address
-              </label>
+              <label className="text-sm font-bold text-gray-700 block mb-1.5">Email Address</label>
               <input
                 {...register("email")}
                 type="email"
@@ -87,15 +90,11 @@ export default function LoginPage() {
                 placeholder="you@example.com"
                 autoComplete="email"
               />
-              {errors.email && (
-                <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
-              )}
+              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
             </div>
 
             <div>
-              <label className="text-sm font-bold text-gray-700 block mb-1.5">
-                Password
-              </label>
+              <label className="text-sm font-bold text-gray-700 block mb-1.5">Password</label>
               <div className="relative">
                 <input
                   {...register("password")}
@@ -109,11 +108,7 @@ export default function LoginPage() {
                   onClick={() => setShowPass(!showPass)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
                 >
-                  {showPass ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
+                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
               {errors.password && (
@@ -142,9 +137,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-gray-200" />
             </div>
             <div className="relative text-center">
-              <span className="px-4 bg-white text-gray-400 text-sm">
-                or continue with
-              </span>
+              <span className="px-4 bg-white text-gray-400 text-sm">or continue with</span>
             </div>
           </div>
 
