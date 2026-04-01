@@ -13,29 +13,35 @@ import {
 import { Role } from "@prisma/client";
 import { getRoleForEmail } from "@/lib/roles";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
-  pages: {
-    signIn: "/auth/login",
-    error: "/auth/login",
-  },
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-    }),
-    CredentialsProvider({
-      name: "credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
-        const email = String(credentials.email).trim().toLowerCase();
-        const password = String(credentials.password);
+const googleClientId = process.env.GOOGLE_CLIENT_ID?.trim();
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim();
+const hasGoogleOAuth =
+  !!googleClientId &&
+  !!googleClientSecret &&
+  googleClientId !== "your-google-client-id.apps.googleusercontent.com" &&
+  googleClientSecret !== "your-google-client-secret";
 
+const providers = [
+  ...(hasGoogleOAuth
+    ? [
+        GoogleProvider({
+          clientId: googleClientId,
+          clientSecret: googleClientSecret,
+        }),
+      ]
+    : []),
+  CredentialsProvider({
+    name: "credentials",
+    credentials: {
+      email: { label: "Email", type: "email" },
+      password: { label: "Password", type: "password" },
+    },
+    async authorize(credentials) {
+      if (!credentials?.email || !credentials?.password) return null;
+      const email = String(credentials.email).trim().toLowerCase();
+      const password = String(credentials.password);
+
+      try {
         let user = await prisma.user.findUnique({
           where: { email },
         });
@@ -58,7 +64,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           });
         }
 
-        if (user && user.role !== getRoleForEmail(user.email) && user.email === DEFAULT_ADMIN_EMAIL) {
+        if (
+          user &&
+          user.role !== getRoleForEmail(user.email) &&
+          user.email === DEFAULT_ADMIN_EMAIL
+        ) {
           user = await prisma.user.update({
             where: { id: user.id },
             data: { role: Role.SUPER_ADMIN },
@@ -78,9 +88,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           image: user.image,
           role: user.role,
         };
-      },
-    }),
-  ],
+      } catch (error) {
+        console.error("[auth] Credentials authorize failed", error);
+        return null;
+      }
+    },
+  }),
+];
+
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  adapter: PrismaAdapter(prisma),
+  session: { strategy: "jwt" },
+  pages: {
+    signIn: "/auth/login",
+    error: "/auth/login",
+  },
+  providers,
   callbacks: {
     async jwt({ token, user }) {
       if (user) {

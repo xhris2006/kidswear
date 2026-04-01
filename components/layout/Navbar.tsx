@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { motion, AnimatePresence } from "framer-motion";
+import { isAdminRole } from "@/lib/roles";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -162,7 +163,7 @@ export default function Navbar() {
                           >
                             <ShoppingBag className="w-4 h-4" /> My Orders
                           </Link>
-                          {(session.user as any)?.role === "ADMIN" && (
+                          {isAdminRole((session.user as any)?.role) && (
                             <Link
                               href="/admin/dashboard"
                               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-pink-50 rounded-xl"
@@ -245,7 +246,7 @@ export default function Navbar() {
                       >
                         <ShoppingBag className="w-4 h-4" /> My Orders
                       </Link>
-                      {(session.user as any)?.role === "ADMIN" && (
+                      {isAdminRole((session.user as any)?.role) && (
                         <Link
                           href="/admin/dashboard"
                           className="flex items-center gap-2 py-2.5 px-3 text-gray-700 hover:bg-pink-50 rounded-xl font-semibold"
