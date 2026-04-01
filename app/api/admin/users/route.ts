@@ -2,10 +2,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { canManageRoles } from "@/lib/roles";
 
 async function checkAdmin() {
   const session = await auth();
-  return session && (session.user as any)?.role === "ADMIN" ? session : null;
+  return session && canManageRoles((session.user as any)?.role) ? session : null;
 }
 
 export async function GET() {

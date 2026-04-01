@@ -11,6 +11,7 @@ import {
   DEFAULT_ADMIN_PASSWORD,
 } from "@/lib/default-admin";
 import { Role } from "@prisma/client";
+import { getRoleForEmail } from "@/lib/roles";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -46,14 +47,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             update: {
               name: DEFAULT_ADMIN_NAME,
               password: hashedPassword,
-              role: Role.ADMIN,
+              role: Role.SUPER_ADMIN,
             },
             create: {
               email: DEFAULT_ADMIN_EMAIL,
               name: DEFAULT_ADMIN_NAME,
               password: hashedPassword,
-              role: Role.ADMIN,
+              role: Role.SUPER_ADMIN,
             },
+          });
+        }
+
+        if (user && user.role !== getRoleForEmail(user.email) && user.email === DEFAULT_ADMIN_EMAIL) {
+          user = await prisma.user.update({
+            where: { id: user.id },
+            data: { role: Role.SUPER_ADMIN },
           });
         }
 

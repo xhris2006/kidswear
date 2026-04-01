@@ -1,6 +1,7 @@
 // middleware.ts
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import { canManageRoles, isAdminRole } from "@/lib/roles";
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
@@ -13,8 +14,11 @@ export default auth((req) => {
         new URL(`/auth/login?redirect=${encodeURIComponent(pathname)}`, req.url)
       );
     }
-    if ((session.user as any)?.role !== "ADMIN") {
+    if (!isAdminRole((session.user as any)?.role)) {
       return NextResponse.redirect(new URL("/", req.url));
+    }
+    if (pathname.startsWith("/admin/users") && !canManageRoles((session.user as any)?.role)) {
+      return NextResponse.redirect(new URL("/admin/dashboard", req.url));
     }
   }
 

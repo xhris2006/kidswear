@@ -20,13 +20,13 @@ async function main() {
       email: DEFAULT_ADMIN_EMAIL,
       name: DEFAULT_ADMIN_NAME,
       password: adminPassword,
-      role: Role.ADMIN,
+      role: Role.SUPER_ADMIN,
     },
     create: {
       email: DEFAULT_ADMIN_EMAIL,
       name: DEFAULT_ADMIN_NAME,
       password: adminPassword,
-      role: Role.ADMIN,
+      role: Role.SUPER_ADMIN,
     },
   });
   console.log("✅ Admin created:", admin.email);

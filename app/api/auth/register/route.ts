@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { getRoleForEmail } from "@/lib/roles";
 
 const schema = z.object({
   name: z.string().min(2),
@@ -25,8 +26,8 @@ export async function POST(req: NextRequest) {
 
     const hashed = await bcrypt.hash(password, 12);
     const user = await prisma.user.create({
-      data: { name, email, password: hashed },
-      select: { id: true, email: true, name: true },
+      data: { name, email, password: hashed, role: getRoleForEmail(email) },
+      select: { id: true, email: true, name: true, role: true },
     });
 
     return NextResponse.json(user, { status: 201 });

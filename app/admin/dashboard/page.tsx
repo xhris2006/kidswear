@@ -6,6 +6,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import StatsCard from "@/components/admin/StatsCard";
 import RecentOrdersTable from "@/components/admin/RecentOrdersTable";
 import { ShoppingBag, Users, Package, DollarSign, TrendingUp } from "lucide-react";
+import { isAdminRole } from "@/lib/roles";
 
 async function getStats() {
   const [
@@ -53,7 +54,7 @@ async function getStats() {
 
 export default async function AdminDashboard() {
   const session = await auth();
-  if (!session || (session.user as any)?.role !== "ADMIN") {
+  if (!session || !isAdminRole((session.user as any)?.role)) {
     redirect("/auth/login");
   }
 

@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isAdminRole } from "@/lib/roles";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -9,7 +10,7 @@ type RouteContext = {
 
 async function checkAdmin() {
   const session = await auth();
-  return session && (session.user as any)?.role === "ADMIN" ? session : null;
+  return session && isAdminRole((session.user as any)?.role) ? session : null;
 }
 
 export async function PATCH(req: NextRequest, { params }: RouteContext) {

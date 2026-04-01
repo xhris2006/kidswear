@@ -4,10 +4,11 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import AdminLayout from "@/components/admin/AdminLayout";
 import AdminProductsClient from "@/components/admin/AdminProductsClient";
+import { isAdminRole } from "@/lib/roles";
 
 export default async function AdminProductsPage() {
   const session = await auth();
-  if (!session || (session.user as any)?.role !== "ADMIN") redirect("/auth/login");
+  if (!session || !isAdminRole((session.user as any)?.role)) redirect("/auth/login");
 
   const [products, categories] = await Promise.all([
     prisma.product.findMany({

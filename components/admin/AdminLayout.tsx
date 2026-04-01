@@ -3,15 +3,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import {
   LayoutDashboard,
   Package,
   ShoppingBag,
   Users,
-  BarChart2,
   Menu,
-  X,
   LogOut,
   Home,
   ChevronRight,
@@ -26,7 +24,12 @@ const navItems = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const canManageUsers = (session?.user as any)?.role === "SUPER_ADMIN";
+  const visibleNavItems = navItems.filter(
+    (item) => item.href !== "/admin/users" || canManageUsers
+  );
 
   const Sidebar = () => (
     <div className="flex flex-col h-full">
@@ -45,7 +48,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Nav */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {navItems.map(({ href, label, icon: Icon }) => {
+        {visibleNavItems.map(({ href, label, icon: Icon }) => {
           const active = pathname.startsWith(href);
           return (
             <Link
@@ -61,9 +64,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             >
               <Icon className="w-4.5 h-4.5" />
               {label}
-              {active && <ChevronRight className="w-4 h-4 ml-auto" />}
-            </Link>
-          );
+            {active && <ChevronRight className="w-4 h-4 ml-auto" />}
+          </Link>
+        );
         })}
       </nav>
 
@@ -116,7 +119,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Menu className="w-5 h-5" />
           </button>
           <h2 className="font-bold text-gray-900 text-lg capitalize">
-            {navItems.find((n) => pathname.startsWith(n.href))?.label || "Admin"}
+            {visibleNavItems.find((n) => pathname.startsWith(n.href))?.label || "Admin"}
           </h2>
         </header>
 

@@ -1,5 +1,5 @@
 // types/index.ts
-export type Role = "USER" | "ADMIN";
+export type Role = "USER" | "ADMIN" | "SUPER_ADMIN";
 
 export type OrderStatus =
   | "PENDING"
