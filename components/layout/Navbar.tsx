@@ -1,6 +1,6 @@
 "use client";
 // components/layout/Navbar.tsx
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -12,7 +12,6 @@ import {
   User,
   LogOut,
   LayoutDashboard,
-  ChevronDown,
 } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,7 +22,7 @@ const navLinks = [
   { href: "/shop", label: "Shop" },
   { href: "/shop?category=girls-clothing", label: "Girls" },
   { href: "/shop?category=boys-clothing", label: "Boys" },
-  { href: "/shop?category=summer-clothing", label: "Summer", hot: true },
+  { href: "/shop?category=summer-clothing", label: "Summer" },
   { href: "/shop?category=shoes", label: "Shoes" },
 ];
 
@@ -31,13 +30,12 @@ export default function Navbar() {
   const { data: session } = useSession();
   const itemCount = useCart((s) => s.itemCount);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [isCompact, setIsCompact] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => setIsCompact(window.scrollY > 12);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -46,249 +44,203 @@ export default function Navbar() {
 
   return (
     <>
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? "bg-white/95 backdrop-blur-md shadow-md"
-            : "bg-white/80 backdrop-blur-sm"
-        }`}
-      >
-        {/* Top bar */}
-        <div className="bg-gray-900 text-white text-xs text-center py-1.5 px-4">
-          <span>🎉 Free shipping on orders over $50 | Use code: </span>
-          <span className="font-bold text-yellow-300">KIDSLOVE</span>
+      <header className="sticky top-0 z-50">
+        <div className="bg-gray-950 px-4 py-2 text-center text-[11px] font-semibold tracking-[0.12em] text-white uppercase">
+          Free shipping over $50
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-              <div className="w-9 h-9 bg-coral rounded-xl flex items-center justify-center shadow-md">
-                <span className="text-white font-playfair font-bold text-lg">K</span>
-              </div>
-              <span className="font-playfair font-bold text-xl text-gray-900 hidden sm:block">
-                Kids<span className="text-coral">Wear</span>
-              </span>
-            </Link>
+        <div
+          className={`border-b border-black/5 bg-white/95 backdrop-blur transition-all ${
+            isCompact ? "shadow-sm" : ""
+          }`}
+        >
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setMenuOpen(true)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50 lg:hidden"
+                aria-label="Open menu"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
 
-            {/* Desktop Nav */}
-            <nav className="hidden lg:flex items-center gap-6">
+              <Link href="/" className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-coral shadow-md">
+                  <span className="font-playfair text-lg font-bold text-white">K</span>
+                </div>
+                <div className="leading-none">
+                  <p className="font-playfair text-xl font-bold text-gray-900">KidsWear</p>
+                  <p className="hidden text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400 sm:block">
+                    Little looks, big joy
+                  </p>
+                </div>
+              </Link>
+            </div>
+
+            <nav className="hidden lg:flex items-center gap-5">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="nav-link text-sm flex items-center gap-1"
+                  className="text-sm font-semibold text-gray-700 transition-colors hover:text-coral"
                 >
                   {link.label}
-                  {link.hot && (
-                    <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-                      HOT
-                    </span>
-                  )}
                 </Link>
               ))}
             </nav>
 
-            {/* Right actions */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Search */}
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setSearchOpen(true)}
-                className="p-2 hover:bg-pink-50 rounded-full transition-colors"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50"
                 aria-label="Search"
               >
-                <Search className="w-5 h-5 text-gray-700" />
+                <Search className="h-5 w-5" />
               </button>
 
-              {/* Wishlist */}
               <Link
                 href="/wishlist"
-                className="p-2 hover:bg-pink-50 rounded-full transition-colors hidden sm:block"
+                className="hidden sm:inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50"
                 aria-label="Wishlist"
               >
-                <Heart className="w-5 h-5 text-gray-700" />
+                <Heart className="h-5 w-5" />
               </Link>
 
-              {/* Cart */}
               <Link
                 href="/shop/cart"
-                className="p-2 hover:bg-pink-50 rounded-full transition-colors relative"
+                className="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 bg-white text-gray-700 transition-colors hover:bg-gray-50"
                 aria-label="Cart"
               >
-                <ShoppingBag className="w-5 h-5 text-gray-700" />
+                <ShoppingBag className="h-5 w-5" />
                 {count > 0 && (
-                  <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 bg-coral text-white text-[10px] font-bold rounded-full flex items-center justify-center min-w-[18px] min-h-[18px] text-center leading-none"
-                  >
+                  <span className="absolute -right-1 -top-1 flex min-h-[20px] min-w-[20px] items-center justify-center rounded-full bg-coral px-1 text-[10px] font-bold text-white">
                     {count > 99 ? "99+" : count}
-                  </motion.span>
+                  </span>
                 )}
               </Link>
 
-              {/* User menu */}
               {session ? (
-                <div className="relative hidden sm:block">
-                  <button
-                    onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className="flex items-center gap-1.5 p-2 hover:bg-pink-50 rounded-full transition-colors"
-                  >
-                    <div className="w-7 h-7 bg-coral rounded-full flex items-center justify-center text-white text-xs font-bold">
-                      {session.user?.name?.[0]?.toUpperCase() || "U"}
-                    </div>
-                    <ChevronDown className="w-3 h-3 text-gray-600" />
-                  </button>
-                  <AnimatePresence>
-                    {userMenuOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                        className="absolute right-0 top-full mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
-                      >
-                        <div className="p-3 border-b border-gray-100">
-                          <p className="font-bold text-gray-900 text-sm truncate">
-                            {session.user?.name}
-                          </p>
-                          <p className="text-gray-500 text-xs truncate">
-                            {session.user?.email}
-                          </p>
-                        </div>
-                        <div className="p-1">
-                          <Link
-                            href="/shop/orders"
-                            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-pink-50 rounded-xl"
-                            onClick={() => setUserMenuOpen(false)}
-                          >
-                            <ShoppingBag className="w-4 h-4" /> My Orders
-                          </Link>
-                          {isAdminRole((session.user as any)?.role) && (
-                            <Link
-                              href="/admin/dashboard"
-                              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-pink-50 rounded-xl"
-                              onClick={() => setUserMenuOpen(false)}
-                            >
-                              <LayoutDashboard className="w-4 h-4" /> Admin Panel
-                            </Link>
-                          )}
-                          <button
-                            onClick={() => {
-                              setUserMenuOpen(false);
-                              signOut();
-                            }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-xl"
-                          >
-                            <LogOut className="w-4 h-4" /> Sign Out
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                <button
+                  onClick={() => setMenuOpen(true)}
+                  className="inline-flex h-11 min-w-[44px] items-center justify-center rounded-2xl bg-gray-900 px-3 text-sm font-bold text-white"
+                >
+                  {session.user?.name?.[0]?.toUpperCase() || "U"}
+                </button>
               ) : (
                 <Link
                   href="/auth/login"
-                  className="hidden sm:flex items-center gap-1.5 bg-coral text-white text-sm font-bold px-4 py-2 rounded-full hover:bg-red-500 transition-colors"
+                  className="hidden sm:inline-flex items-center gap-2 rounded-2xl bg-coral px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-red-500"
                 >
-                  <User className="w-4 h-4" /> Login
+                  <User className="h-4 w-4" /> Login
                 </Link>
               )}
-
-              {/* Mobile menu button */}
-              <button
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="lg:hidden p-2 hover:bg-pink-50 rounded-full transition-colors"
-                aria-label="Toggle menu"
-              >
-                {menuOpen ? (
-                  <X className="w-5 h-5" />
-                ) : (
-                  <Menu className="w-5 h-5" />
-                )}
-              </button>
             </div>
           </div>
         </div>
+      </header>
 
-        {/* Mobile menu */}
-        <AnimatePresence>
-          {menuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden bg-white border-t border-gray-100 overflow-hidden"
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setMenuOpen(false);
+            }}
+          >
+            <motion.aside
+              initial={{ x: -24, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -24, opacity: 0 }}
+              className="flex h-full w-[88vw] max-w-sm flex-col bg-white shadow-2xl"
             >
-              <div className="px-4 py-4 space-y-1">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="flex items-center gap-2 py-2.5 px-3 text-gray-700 hover:bg-pink-50 hover:text-coral rounded-xl font-semibold transition-colors"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    {link.label}
-                    {link.hot && (
-                      <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-                        HOT
-                      </span>
-                    )}
-                  </Link>
-                ))}
-                <div className="border-t border-gray-100 pt-3 mt-3 space-y-1">
+              <div className="flex items-center justify-between border-b border-gray-100 px-4 py-4">
+                <div>
+                  <p className="font-playfair text-2xl font-bold text-gray-900">KidsWear</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-400">
+                    Navigation
+                  </p>
+                </div>
+                <button
+                  onClick={() => setMenuOpen(false)}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200"
+                  aria-label="Close menu"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-4 py-5">
+                <nav className="space-y-2">
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center justify-between rounded-2xl px-4 py-4 text-base font-semibold text-gray-800 transition-colors hover:bg-pink-50 hover:text-coral"
+                    >
+                      <span>{link.label}</span>
+                      <span className="text-xs uppercase tracking-[0.16em] text-gray-300">Go</span>
+                    </Link>
+                  ))}
+                </nav>
+
+                <div className="mt-6 rounded-3xl bg-gray-50 p-4">
                   {session ? (
-                    <>
+                    <div className="space-y-2">
+                      <p className="font-semibold text-gray-900">{session.user?.name}</p>
+                      <p className="text-sm text-gray-500">{session.user?.email}</p>
                       <Link
                         href="/shop/orders"
-                        className="flex items-center gap-2 py-2.5 px-3 text-gray-700 hover:bg-pink-50 rounded-xl font-semibold"
                         onClick={() => setMenuOpen(false)}
+                        className="mt-3 flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-gray-800"
                       >
-                        <ShoppingBag className="w-4 h-4" /> My Orders
+                        <ShoppingBag className="h-4 w-4" /> My Orders
                       </Link>
                       {isAdminRole((session.user as any)?.role) && (
                         <Link
                           href="/admin/dashboard"
-                          className="flex items-center gap-2 py-2.5 px-3 text-gray-700 hover:bg-pink-50 rounded-xl font-semibold"
                           onClick={() => setMenuOpen(false)}
+                          className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-gray-800"
                         >
-                          <LayoutDashboard className="w-4 h-4" /> Admin Panel
+                          <LayoutDashboard className="h-4 w-4" /> Admin Panel
                         </Link>
                       )}
                       <button
-                        onClick={() => {
-                          setMenuOpen(false);
-                          signOut();
-                        }}
-                        className="w-full flex items-center gap-2 py-2.5 px-3 text-red-600 hover:bg-red-50 rounded-xl font-semibold"
+                        onClick={() => signOut({ callbackUrl: "/" })}
+                        className="flex w-full items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-red-600"
                       >
-                        <LogOut className="w-4 h-4" /> Sign Out
+                        <LogOut className="h-4 w-4" /> Sign Out
                       </button>
-                    </>
+                    </div>
                   ) : (
-                    <Link
-                      href="/auth/login"
-                      className="flex items-center gap-2 py-2.5 px-3 text-coral hover:bg-pink-50 rounded-xl font-bold"
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      <User className="w-4 h-4" /> Login / Register
-                    </Link>
+                    <div className="space-y-3">
+                      <p className="text-sm text-gray-500">Sign in to track orders and manage your account.</p>
+                      <Link
+                        href="/auth/login"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center justify-center gap-2 rounded-2xl bg-coral px-4 py-3 text-sm font-bold text-white"
+                      >
+                        <User className="h-4 w-4" /> Login / Register
+                      </Link>
+                    </div>
                   )}
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </header>
+            </motion.aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Search overlay */}
       <AnimatePresence>
         {searchOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-start justify-center pt-20 px-4"
+            className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-sm px-4 pt-20"
             onClick={(e) => {
               if (e.target === e.currentTarget) setSearchOpen(false);
             }}
@@ -297,14 +249,10 @@ export default function Navbar() {
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
-              className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden"
+              className="mx-auto w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl"
             >
-              <form
-                action="/shop"
-                className="flex items-center gap-3 p-4"
-                onSubmit={() => setSearchOpen(false)}
-              >
-                <Search className="w-5 h-5 text-gray-400 flex-shrink-0" />
+              <form action="/shop" className="flex items-center gap-3 p-4" onSubmit={() => setSearchOpen(false)}>
+                <Search className="h-5 w-5 flex-shrink-0 text-gray-400" />
                 <input
                   autoFocus
                   type="text"
@@ -312,32 +260,26 @@ export default function Navbar() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search for dresses, shoes, accessories..."
-                  className="flex-1 text-lg outline-none text-gray-800 placeholder-gray-400"
+                  className="flex-1 text-base outline-none text-gray-800 placeholder-gray-400 sm:text-lg"
                 />
                 <button
                   type="button"
                   onClick={() => setSearchOpen(false)}
-                  className="p-2 hover:bg-gray-100 rounded-full"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-100"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="h-4 w-4" />
                 </button>
               </form>
               <div className="px-4 pb-4">
-                <p className="text-xs text-gray-500 mb-2 font-semibold uppercase tracking-wide">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-gray-400">
                   Popular searches
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {[
-                    "Summer dress",
-                    "Girls skirt",
-                    "Boys tshirt",
-                    "Baby shoes",
-                    "Hair clips",
-                  ].map((term) => (
+                  {["Summer dress", "Girls skirt", "Boys tshirt", "Baby shoes", "Hair clips"].map((term) => (
                     <a
                       key={term}
                       href={`/shop?search=${encodeURIComponent(term)}`}
-                      className="px-3 py-1.5 bg-pink-50 text-coral text-sm font-semibold rounded-full hover:bg-pink-100 transition-colors"
+                      className="rounded-full bg-pink-50 px-3 py-2 text-sm font-semibold text-coral transition-colors hover:bg-pink-100"
                       onClick={() => setSearchOpen(false)}
                     >
                       {term}
@@ -349,9 +291,6 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Spacer for fixed navbar */}
-      <div className="h-16 mt-6" />
     </>
   );
 }
